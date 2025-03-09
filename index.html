@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+
+    <title>ReconDreamer++</title>
+
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1296">
+    <meta property="og:image:height" content="840">
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="ReconDreamer++: Harmonizing Generative and Reconstructive Models\\for Driving Scene Representation" />
+    <meta property="og:description" content="     
+    Combining reconstruction models with generative models has emerged as a promising paradigm for closed-loop simulation in autonomous driving. For example, ReconDreamer has demonstrated remarkable success in rendering large-scale maneuvers. However, a significant gap remains between the generated data and real-world sensor observations, particularly in terms of fidelity for structured elements, such as the ground surface. To address these challenges, we propose ReconDreamer++, an enhanced framework that significantly improves the overall rendering quality by mitigating the domain gap and refining the representation of the ground surface. Specifically, ReconDreamer++ introduces the Novel Trajectory Deformable Network (NTDNet), which leverages learnable spatial deformation mechanisms to bridge the domain gap between synthesized novel views and original sensor observations. Moreover, for structured elements such as the ground surface, we preserve geometric prior knowledge in 3D Gaussians, and the optimization process focuses on refining appearance attributes while preserving the underlying geometric structure. Experimental evaluations conducted on multiple datasets (Waymo, nuScenes, PandaSet, and EUVS) confirm the superior performance of ReconDreamer++. Specifically, on Waymo, ReconDreamer++ achieves performance comparable to Street Gaussians for the original trajectory while significantly outperforming ReconDreamer on novel trajectories. In particular, it achieves substantial improvements, including a 6.1% increase in NTA-IoU, a 23. 0% improvement in FID, and a remarkable 4.5% gain in the ground surface metric NTL-IoU, highlighting its effectiveness in accurately reconstructing structured elements such as the road surface.
+    />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="ReconDreamer++: Harmonizing Generative and Reconstructive Models\\for Driving Scene Representation" />
+    <meta name="twitter:description" content="     
+    Combining reconstruction models with generative models has emerged as a promising paradigm for closed-loop simulation in autonomous driving. For example, ReconDreamer has demonstrated remarkable success in rendering large-scale maneuvers. However, a significant gap remains between the generated data and real-world sensor observations, particularly in terms of fidelity for structured elements, such as the ground surface. To address these challenges, we propose ReconDreamer++, an enhanced framework that significantly improves the overall rendering quality by mitigating the domain gap and refining the representation of the ground surface. Specifically, ReconDreamer++ introduces the Novel Trajectory Deformable Network (NTDNet), which leverages learnable spatial deformation mechanisms to bridge the domain gap between synthesized novel views and original sensor observations. Moreover, for structured elements such as the ground surface, we preserve geometric prior knowledge in 3D Gaussians, and the optimization process focuses on refining appearance attributes while preserving the underlying geometric structure. Experimental evaluations conducted on multiple datasets (Waymo, nuScenes, PandaSet, and EUVS) confirm the superior performance of ReconDreamer++. Specifically, on Waymo, ReconDreamer++ achieves performance comparable to Street Gaussians for the original trajectory while significantly outperforming ReconDreamer on novel trajectories. In particular, it achieves substantial improvements, including a 6.1% increase in NTA-IoU, a 23. 0% improvement in FID, and a remarkable 4.5% gain in the ground surface metric NTL-IoU, highlighting its effectiveness in accurately reconstructing structured elements such as the road surface.
+    />
+
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.8.0/codemirror.min.css">
+    <link rel="stylesheet" href="css/app.css">
+
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.8.0/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.5.3/clipboard.min.js"></script>
+    <script src="js/video_comparison.js"></script>
+    <script src="js/app.js"></script>
+
+    <style>
+        .slick-prev:before,
+        .slick-next:before {
+            color: black;
+
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        /* 设置段落文本对齐方式 */
+        p {
+            text-align: justify; /* 使段落文本两端对齐 */
+            text-justify: inter-word; /* 改进英文对齐，增加单词间隔 */
+        }
+        /* .container {
+            margin-left: -100px;
+        } */
+        .image-row {
+            display: flex;
+            justify-content: center;
+        }
+
+        .image-wrapper {
+            margin: 0 10px;
+            text-align: center;
+        }
+
+        .caption-row {
+            align-items: flex-end;
+        }
+
+        .caption-row .image-wrapper {
+            margin-bottom: 20px;
+        }
+
+        .caption-row .image-wrapper p {
+            margin-top: 10px;
+        }
+        
+    </style>
+</head>
+
+<body>
+    <div class="container" id="main">
+        <div class="row">
+            <h2 class="col-md-12 text-center">
+                <b>ReconDreamer++:</b> Harmonizing Generative and Reconstructive Models<br>for Driving Scene Representation            
+            <small>
+                <!-- cvpr -->
+            </small>
+            </h2>
+
+        </div>
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="list-inline">
+                    <li>
+                        Guosheng Zhao<sup>* 1,2</sup>
+                    </li>
+                    <li>
+                      Xiaofeng Wang<sup>* 1,2</sup>
+                    </li>
+                    <li>
+                        Chaojun Ni<sup>* 1,3</sup>
+                    </li>
+                    <li>
+                        Zheng Zhu<sup>* 1 </sup><sup><span class="envelope">&#9993;</span></sup>
+                    </li>
+                </ul>
+                <ul class="list-inline">
+                    <li>
+                        Wenkang Qin<sup>1</sup>
+                    </li>
+                    <li>
+                        Guan Huang<sup>1</sup>
+                    </li>
+                    <li>
+                      Xingang Wang<sup>2 </sup><sup><span class="envelope">&#9993;</span></sup>
+                    </li>
+                </ul>
+                <ul class="list-inline">
+                    <li>
+                        <sup>1</sup> GigaAI
+                    </li>
+                    <li>
+                        <sup>2</sup> Institute of Automation, Chinese Academy of Sciences
+                    </li>
+                    <li>
+                        <sup>3</sup> Peking University
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 col-md-offset-4 text-center">
+                <ul class="nav nav-pills nav-justified" style="margin-top:10px">
+                <li>
+                    <!-- <a href=https://arxiv.org/abs/2410.13571> -->
+                    <image src="img/ReconDreamer++.png" height="60px"></image>
+                        <h4><strong>Paper</strong></h4>
+                    </a>
+                </li>
+                <li>
+                    <!-- <a href="https://github.com/GigaAI-research/ReconDreamer-Plus"> -->
+                    <image src="img/github.png" height="60px"></image>
+                        <h4><strong>Code</strong></h4>
+                    </a>
+                </li>
+                <!-- <li>
+                    <a href="https://drive.google.com/drive/folders/1ghpE_kBwqXiWgiSWAajByjPsmj1y0l1H">
+                    <image src="img/database_icon.png" height="60px"></image>
+                        <h4><strong>Data</strong></h4>
+                    </a>
+                </li> -->
+                </ul>
+            </div>
+        </div>
+
+        <div class="row " style="margin-top:20px">
+            <div class="col-md-8 col-md-offset-2 ">
+                <img src="img/framework.png" width="100%" >
+                </img>
+            </div>
+            <div class="col-md-8 col-md-offset-2 ">
+                <p class="text-center ">
+                    The overall framework of ReconDreamer++.
+                </p>
+            </div>
+        </div>
+
+
+        <div class="row ">
+            <div class="col-md-8 col-md-offset-2 ">
+                <h3>
+                    <b>Abstract</b>
+                </h3>
+                <p class="text-justify ">
+                    <body>
+                        <p>
+                          Combining reconstruction models with generative models has emerged as a promising paradigm for closed-loop simulation in autonomous driving. For example, ReconDreamer has demonstrated remarkable success in rendering large-scale maneuvers. However, a significant gap remains between the generated data and real-world sensor observations, particularly in terms of fidelity for structured elements, such as the ground surface. To address these challenges, we propose <b>ReconDreamer++</b>, an enhanced framework that significantly improves the overall rendering quality by mitigating the domain gap and refining the representation of the ground surface. Specifically, <b>ReconDreamer++</b> introduces the Novel Trajectory Deformable Network (NTDNet), which leverages learnable spatial deformation mechanisms to bridge the domain gap between synthesized novel views and original sensor observations. Moreover, for structured elements such as the ground surface, we preserve geometric prior knowledge in 3D Gaussians, and the optimization process focuses on refining appearance attributes while preserving the underlying geometric structure. Experimental evaluations conducted on multiple datasets (Waymo, nuScenes, PandaSet, and EUVS) confirm the superior performance of <b>ReconDreamer++</b>. Specifically, on Waymo, <b>ReconDreamer++</b> achieves performance comparable to Street Gaussians for the original trajectory while significantly outperforming ReconDreamer on novel trajectories. In particular, it achieves substantial improvements, including a 6.1% increase in NTA-IoU, a 23. 0% improvement in FID, and a remarkable 4.5% gain in the ground surface metric NTL-IoU, highlighting its effectiveness in accurately reconstructing structured elements such as the road surface.
+                        </p>
+                    </body>
+                </p>
+            </div>
+        </div>
+
+
+
+        <div class="row ">
+            <div class="col-md-8 col-md-offset-2 ">
+                <h3>
+                    <b>Experimental Results</b>
+                </h3>
+                <div class="tabs">
+                    <div class="tab active" id='compare_video' onclick="showComparison(this)">Video</div>
+                    <div class="tab" id='compare_image' onclick="showComparison(this)">Single Frame</div>
+                </div>
+ 
+                <div class="image-row" >
+                    <div class="image-wrapper">
+                        <figcaption id="ori_video_caption" class="text-center mt-2">
+                              <b>Original Trajectory</b>
+                        </figcaption>
+                        <div class="video-compare-container" id="seq25_compare_videoDiv" style="display: inline;">
+                            <video class="video" id="seq25_compare_video" loop playsinline autoPlay muted 
+                                src="comparsion/fig1/reconstruction_comparison.mp4" onplay="resizeAndPlay(this)">
+                            </video>
+                            <canvas height=0 class="videoMerge" id="seq25_compare_videoMerge"></canvas>
+                        </div>
+                        
+                    </div>
+
+                    <div class="image-wrapper">
+                        <figcaption id="novel_video_caption" class="text-center mt-2">
+                            <b>Lane Shift @ 3m</b>
+                        </figcaption>
+                        <div class="video-compare-container" id="seq06_compare_videoDiv" style="display: inline;">
+                            <video class="video" id="seq06_compare_video" loop playsinline autoPlay muted 
+                                src="comparsion/fig1/lane_shift_left_3m_comparison.mp4" onplay="resizeAndPlay(this)">
+                            </video>
+                            <canvas height=0 class="videoMerge" id="seq06_compare_videoMerge"></canvas>
+                        </div>
+                       
+                    </div>
+                    
+                </div>
+                <div class="image-row">
+                    <div class="image-wrapper">
+                        <figcaption id="ori_image_caption" class="text-center mt-2">
+                            <b>Original Trajectory</b>
+                        </figcaption>
+                        <div class="video-compare-container" id="seq25_compare_imageDiv" style="display: none;">
+                            <video class="video" id="seq25_compare_image" loop playsinline autoPlay muted 
+                                src="comparsion/fig1/reconstruction_static.mp4" onplay="resizeAndPlay(this)">
+                            </video>
+                            <canvas height=0 class="videoMerge" id="seq25_compare_imageMerge"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="image-wrapper">
+                        <figcaption id="novel_image_caption" class="text-center mt-2">
+                            <b>Lane Shift @ 3m</b>
+                        </figcaption>
+                        <div class="video-compare-container" id="seq06_compare_imageDiv" style="display: none;">
+                            <video class="video" id="seq06_compare_image" loop playsinline autoPlay muted 
+                                src="comparsion/fig1/lane_shift_left_3m_static.mp4" onplay="resizeAndPlay(this)">
+                            </video>
+                            <canvas height=0 class="videoMerge" id="seq06_compare_imageMerge"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+        
+
+
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <h3 style="display: inline-block;">
+                    <b>Rendering Results on Various Datasets.</b>
+                </h3>
+                <br>
+                
+                <div class="text-center">
+                    <div style="position:relative;">
+                        <h3 style="display: inline-block;">
+                            <b>Waymo</b>
+                        </h3>
+                        <br>
+                        <h4 style="display: inline-block;">
+                            <b>Original Trajectory</b>
+                        </h4>
+                        <div class="image-row">
+                            <div class="image-wrapper">
+                                <video width="100%" loop muted autoplay>
+                                    <source src="comparsion/waymo/reconstruction_comparison.mp4" type="video/mp4" />
+                                </video>
+                            </div>
+                        </div>
+                        <!-- <br> -->
+                        <h4 style="display: inline-block;">
+                            <b>Lane Shift @ 3m</b>
+                        </h4>
+                        <div class="image-row">
+                            <div class="image-wrapper">
+                                <video width="100%" loop muted autoplay>
+                                    <source src="comparsion/waymo/lane_shift_left_3m_comparison.mp4" type="video/mp4" />
+                                </video>
+                            </div>
+                        </div>
+                        <h4 style="display: inline-block;">
+                            <b>Lane Shift @ 6m</b>
+                        </h4>
+
+                        <div class="image-row">
+                            <div class="image-wrapper">
+                                <video width="100%" loop muted autoplay>
+                                    <source src="comparsion/waymo/lane_shift_left_6m_comparison.mp4" type="video/mp4" />
+                                </video>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                
+                <div class="text-center">
+                    <div style="position:relative;">
+                        <h3 style="display: inline-block;">
+                          <b>nuScenes</b>
+                        </h3>
+                        <br>
+                        <h4 style="display: inline-block;">
+                            <b>Original Trajectory</b>
+                        </h4>
+                        <div class="image-row">
+                            <div class="image-wrapper">
+                                <video width="100%" loop muted autoplay>
+                                    <source src="comparsion/nuscenes/reconstruction_comparison.mp4" type="video/mp4" />
+                                </video>
+                            </div>
+                        </div>
+                        <!-- <br> -->
+                        <h4 style="display: inline-block;">
+                            <b>Lane Shift @ 3m</b>
+                        </h4>
+                        <div class="image-row">
+                            <div class="image-wrapper">
+                                <video width="100%" loop muted autoplay>
+                                    <source src="comparsion/nuscenes/lane_shift_left_3m_comparison.mp4" type="video/mp4" />
+                                </video>
+                            </div>
+                        </div>
+                        <h4 style="display: inline-block;">
+                            <b>Lane Shift @ 6m</b>
+                        </h4>
+
+                        <div class="image-row">
+                            <div class="image-wrapper">
+                                <video width="100%" loop muted autoplay>
+                                    <source src="comparsion/nuscenes/lane_shift_left_6m_comparison.mp4" type="video/mp4" />
+                                </video>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br>
+               
+                <div class="text-center">
+                    <div style="position:relative;">
+                        <h3 style="display: inline-block;">
+                          <b>PandaSet</b>
+                        </h3>
+                        <br>
+                        <h4 style="display: inline-block;">
+                            <b>Original Trajectory</b>
+                        </h4>
+                        <div class="image-row">
+                            <div class="image-wrapper">
+                                <video width="100%" loop muted autoplay>
+                                    <source src="comparsion/pandaset/reconstruction_comparison.mp4" type="video/mp4" />
+                                </video>
+                            </div>
+                        </div>
+                        <!-- <br> -->
+                        <h4 style="display: inline-block;">
+                            <b>Lane Shift @ 2m</b>
+                        </h4>
+                        <div class="image-row">
+                            <div class="image-wrapper">
+                                <video width="100%" loop muted autoplay>
+                                    <source src="comparsion/pandaset/lane_shift_left_2m_comparison.mp4" type="video/mp4" />
+                                </video>
+                            </div>
+                        </div>
+                        <h4 style="display: inline-block;">
+                            <b>Lane Shift @ 3m</b>
+                        </h4>
+
+                        <div class="image-row">
+                            <div class="image-wrapper">
+                                <video width="100%" loop muted autoplay>
+                                    <source src="comparsion/pandaset/lane_shift_left_3m_comparison.mp4" type="video/mp4" />
+                                </video>
+                            </div>
+                        </div>
+                        <h4 style="display: inline-block;">
+                            <b>Vertical Shift @ 1m</b>
+                        </h4>
+
+                        <div class="image-row">
+                            <div class="image-wrapper">
+                                <video width="100%" loop muted autoplay>
+                                    <source src="comparsion/pandaset/vert_1m_comparison.mp4" type="video/mp4" />
+                                </video>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                
+                <div class="text-center">
+                    <div style="position:relative;">
+                        <h3 style="display: inline-block;">
+                          <b>EUVS</b>
+                        </h3>
+                        <br>
+                        <h4 style="display: inline-block;">
+                            <b>Train Set</b>
+                        </h4>
+                        <div class="image-row">
+                            <div class="image-wrapper">
+                                <video width="100%" loop muted autoplay>
+                                    <source src="comparsion/euvs/train_set_comparison.mp4" type="video/mp4" />
+                                </video>
+                            </div>
+                        </div>
+                        <!-- <br> -->
+                        <h4 style="display: inline-block;">
+                            <b>Test Set</b>
+                        </h4>
+                        <div class="image-row">
+                            <div class="image-wrapper">
+                                <video width="100%" loop muted autoplay>
+                                    <source src="comparsion/euvs/test_set_comparison.mp4" type="video/mp4" />
+                                </video>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <h3>
+                    <b>Ablation Studies on depth loss, ground model and NTDNet.</b>
+                </h3>
+                
+              
+                <div class="text-center">
+                    <div style="position:relative;">
+                        <h4 style="display: inline-block;">
+                            <b>Original Trajectory</b>
+                        </h4>
+                        <div class="image-row">
+                            <div class="image-wrapper">
+                                <video width="100%" loop muted autoplay>
+                                    <source src="comparsion/ablation/reconstruction_comparison.mp4" type="video/mp4" />
+                                </video>
+                            </div>
+                        </div>
+                        <h4 style="display: inline-block;">
+                            <b>Lane Shift @ 3m</b>
+                        </h4>
+                        <div class="image-row">
+                            <div class="image-wrapper">
+                                <video width="100%" loop muted autoplay>
+                                    <source src="comparsion/ablation/lane_shift_left_3m_comparison.mp4" type="video/mp4" />
+                                </video>
+                            </div>
+                        </div>
+                        <h4 style="display: inline-block;">
+                            <b>Lane Shift @ 6m</b>
+                        </h4>
+                        <div class="image-row">
+                            <div class="image-wrapper">
+                                <video width="100%" loop muted autoplay>
+                                    <source src="comparsion/ablation/lane_shift_left_6m_comparison.mp4" type="video/mp4" />
+                                </video>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+       
+
+        <!-- <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <h3>
+                    Citation
+                </h3>
+                <div class="form-group col-md-10 col-md-offset-1">
+                    <textarea id="bibtex" class="form-control" readonly >
+@inproceedings{zhao2025drive,
+    title={ReconDreamer++: World Models Are Effective Data Machines for 4D Driving Scene Representation}, 
+    author={Guosheng Zhao and Xiaofeng Wang and Chaojun Ni and Zheng Zhu and Wenkang Qin and Guan Huang and Xingang Wang},
+    journal={arxiv arXiv preprint arXiv:2410.13571},
+    year={2025},
+}</textarea>
+                </div>
+            </div>
+        </div> -->
+        
+
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <h3>
+                    Acknowledgements
+                </h3> 
+                <p class="text-justify">
+                    The website template was borrowed from <a href="http://mgharbi.com/">Michaël Gharbi</a> and <a href="https://jonbarron.info/mipnerf360/">Jon Barron</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+
+
+</html>
